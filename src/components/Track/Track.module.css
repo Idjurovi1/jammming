@@ -1,0 +1,18 @@
+.track {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(256, 256, 256, 0.8);
+}
+.info { flex-grow: 1; min-height: 72px; }
+.info h3 { margin: 0.8rem 0 0.2rem; font-size: 1.1rem; }
+.info p { margin: 0 0 0.8rem; font-size: 0.85rem; font-weight: 300; color: rgb(204, 204, 204); }
+.action {
+  padding: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: color 0.25s;
+}
+.action:hover { color: rgba(265, 265, 265, 0.5); }
