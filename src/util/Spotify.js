@@ -87,12 +87,13 @@ const Spotify = {
   },
 
   // Zadatak: Spotify search request (/v1/search?type=track)
+  // Od veljače 2026. limit je najviše 10 (prije 50).
   async search(term) {
     if (!term.trim()) return [];
     const token = await Spotify.getAccessToken();
     if (!token) return [];
     const response = await fetch(
-      `${API}/search?type=track&limit=20&q=${encodeURIComponent(term)}`,
+      `${API}/search?type=track&limit=10&q=${encodeURIComponent(term)}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error('Spotify search failed');
@@ -115,20 +116,23 @@ const Spotify = {
     if (!token) return;
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-    // 1) ID trenutnog korisnika
-    const me = await fetch(`${API}/me`, { headers }).then((r) => r.json());
-    // 2) nova playlista
-    const playlist = await fetch(`${API}/users/${me.id}/playlists`, {
+    // 1) nova playlista u računu prijavljenog korisnika
+    //    (od veljače 2026. Spotify je ukinuo /users/{id}/playlists → koristi se /me/playlists)
+    const playlist = await fetch(`${API}/me/playlists`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ name, description: 'Napravljeno u Jammmingu', public: false }),
-    }).then((r) => r.json());
-    // 3) dodaj pjesme (po URI-ju)
-    await fetch(`${API}/playlists/${playlist.id}/tracks`, {
+    }).then((r) => {
+      if (!r.ok) throw new Error('Spotify playlist create failed');
+      return r.json();
+    });
+    // 2) dodaj pjesme (po URI-ju) – endpoint je preimenovan iz /tracks u /items
+    const added = await fetch(`${API}/playlists/${playlist.id}/items`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ uris: trackUris }),
     });
+    if (!added.ok) throw new Error('Spotify add items failed');
     return playlist.id;
   },
 };
